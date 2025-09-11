@@ -1,0 +1,29 @@
+CREATE TABLE IF NOT EXISTS label (
+  id BIGSERIAL PRIMARY KEY ,
+  name VARCHAR(255) NOT null unique
+);
+
+
+CREATE TABLE IF NOT EXISTS writer (
+    id BIGSERIAL PRIMARY KEY ,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS post (
+  id BIGSERIAL PRIMARY KEY,
+  content TEXT NOT NULL,
+  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(20) NOT NULL CHECK (status IN ('ACTIVE', 'UNDER_REVIEW', 'DELETED')),
+  writer_id BIGINT,
+  FOREIGN KEY(writer_id) REFERENCES writer(id)
+);
+
+CREATE TABLE IF NOT EXISTS post_label (
+    post_id BIGINT NOT NULL,
+    label_id BIGINT NOT NULL,
+    PRIMARY KEY (post_id, label_id),
+    FOREIGN KEY (post_id) REFERENCES post(id),
+    FOREIGN KEY (label_id) REFERENCES label(id)
+);
