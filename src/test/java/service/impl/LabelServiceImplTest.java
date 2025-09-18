@@ -24,6 +24,7 @@ class LabelServiceImplTest {
 
     private LabelService labelService;
 
+
     private final Label testLabel1 = new Label(1L, "Label Test1", new ArrayList<>());
     private final Label testLabel2 = new Label(2L, "Label Test1", new ArrayList<>());
     private final List<Label> labels = List.of(testLabel1, testLabel2);
