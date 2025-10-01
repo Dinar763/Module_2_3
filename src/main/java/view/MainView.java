@@ -5,6 +5,7 @@ package view;
 import controller.LabelController;
 import controller.PostController;
 import controller.WriterController;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import repository.LabelRepository;
 import repository.PostRepository;
@@ -28,13 +29,13 @@ public class MainView {
     private final WriterView writerView;
     private final PostView postView;
     private final LabelView labelView;
-    SessionFactory factory = HibernateUtil.getSessionFactory();
+    Session session = HibernateUtil.getCurrentSession();
 
     public MainView() {
         this.scanner = new Scanner(System.in);
-        WriterRepository writerRepository = new HiberWriterRepositoryImpl(factory);
-        PostRepository postRepository = new HiberPostRepositoryImpl(factory);
-        LabelRepository labelRepository = new HiberLabelRepositoryImpl(factory);
+        WriterRepository writerRepository = new HiberWriterRepositoryImpl(session);
+        PostRepository postRepository = new HiberPostRepositoryImpl(session);
+        LabelRepository labelRepository = new HiberLabelRepositoryImpl(session);
 
         WriterService writerService = new WriterServiceImpl(writerRepository);
         PostService postService = new PostServiceImpl(postRepository);

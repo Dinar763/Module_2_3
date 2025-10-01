@@ -1,22 +1,42 @@
 package util;
 
 
-import lombok.Getter;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
 
-    @Getter
-    private static final SessionFactory sessionFactory = buildSessionFactory();
+    private static final SessionFactory sessionFactory;
 
-    private static SessionFactory buildSessionFactory() {
+    static {
+
         try {
-            Configuration configuration = new Configuration();
-            configuration.configure();
-            return configuration.buildSessionFactory();
+            sessionFactory = new Configuration()
+                    .configure("hibernate.cfg.xml")
+                    .buildSessionFactory();
         } catch (Throwable ex) {
-            throw new ExceptionInInitializerError("SessionFactory initialization is failed " + ex);
+            throw new ExceptionInInitializerError(ex);
         }
+    }
+
+    public static Session getCurrentSession() {
+        return sessionFactory.openSession();
+    }
+
+    public static void beginTransaction() {
+        getCurrentSession().beginTransaction();
+    }
+
+    public static void commitTransaction() {
+        getCurrentSession().getTransaction().commit();
+    }
+
+    public static void rollbackTransaction() {
+        getCurrentSession().getTransaction().rollback();
+    }
+
+    public static void shutdown() {
+        sessionFactory.close();
     }
 }

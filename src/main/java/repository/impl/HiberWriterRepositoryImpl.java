@@ -1,62 +1,46 @@
 package repository.impl;
 
+import lombok.AllArgsConstructor;
 import model.Writer;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import repository.WriterRepository;
+import util.HibernateUtil;
 
 import java.util.List;
 
+@AllArgsConstructor
 public class HiberWriterRepositoryImpl implements WriterRepository {
 
-    private final SessionFactory sessionFactory;
-
-    public HiberWriterRepositoryImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
+    private final Session session;
 
     @Override
     public Writer getById(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(Writer.class, id);
-        }
+        return session.get(Writer.class, id);
     }
 
     @Override
     public List<Writer> getAll() {
-        try (Session session = sessionFactory.openSession()){
-            return session.createQuery("FROM Writer").list();
-        }
+        return session.createQuery("FROM Writer").list();
     }
 
     @Override
     public Writer save(Writer writer) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.save(writer);
-            transaction.commit();
-            return writer;
-        }
+        session.persist(writer);
+        return writer;
     }
 
     @Override
     public Writer update(Writer writer) {
-        try (Session session = sessionFactory.openSession()){
-            Transaction transaction = session.beginTransaction();
-            Writer mergedWriter = session.merge(writer);
-            transaction.commit();
-            return mergedWriter;
-        }
+        return session.merge(writer);
     }
 
     @Override
     public void deleteById(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            Writer writer = session.get(Writer.class, id);
+        Writer writer = session.get(Writer.class, id);
+        if (writer != null) {
             session.remove(writer);
-            transaction.commit();
         }
     }
 }

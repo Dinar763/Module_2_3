@@ -1,64 +1,65 @@
 package repository.impl;
 
+import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import model.Post;
 import model.Status;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import repository.PostRepository;
+import util.HibernateUtil;
 
 import java.util.List;
 
+@AllArgsConstructor
 public class HiberPostRepositoryImpl implements PostRepository {
 
-    private final SessionFactory sessionFactory;
-
-    public HiberPostRepositoryImpl(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
+    private final Session session;
 
     @Override
     public Post getById(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(Post.class, id);
-        }
+        String hql = "SELECT p FROM Post p " +
+                "LEFT JOIN FETCH p.labels " +
+                "LEFT JOIN FETCH p.writer " +
+                "WHERE p.id = :id AND p.status = 'ACTIVE'";
+        return session.createQuery(hql, Post.class)
+                      .setParameter("id", id)
+                      .uniqueResult();
     }
 
     @Override
     public List<Post> getAll() {
-        try (Session session = sessionFactory.openSession()){
-            return session.createQuery("FROM Post", Post.class).list();
-        }
+        String hql = "SELECT p FROM Post p " +
+                "LEFT JOIN FETCH p.labels " +
+                "LEFT JOIN FETCH p.writer " +
+                "WHERE p.status = 'ACTIVE'";
+        return session.createQuery(hql, Post.class).list();
     }
 
     @Override
     public Post save(Post post) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.save(post);
-            transaction.commit();
-            return post;
-        }
+        session.persist(post);
+        return post;
     }
 
     @Override
     public Post update(Post post) {
-        try (Session session = sessionFactory.openSession()){
-            Transaction transaction = session.beginTransaction();
-            session.merge(post);
-            transaction.commit();
-            return post;
-        }
+        session.merge(post);
+        return post;
     }
 
     @Override
     public void deleteById(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            Post post = session.get(Post.class, id);
-            post.setStatus(Status.DELETED);
-            session.update(post);
-            transaction.commit();
+        String hql = "UPDATE Post p " +
+                "SET p.status = 'DELETED' " +
+                "WHERE p.id = :id ";
+        int updatedCount = session.createMutationQuery(hql)
+                                  .setParameter("id", id)
+                                  .executeUpdate();
+
+        if (updatedCount == 0) {
+            throw new EntityNotFoundException("Post with id " + id + " not found");
         }
     }
 }
